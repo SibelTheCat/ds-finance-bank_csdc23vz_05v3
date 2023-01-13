@@ -20,3 +20,4 @@ public interface BankInterface {
     BigDecimal buyStocks(int costumerID, String symbol, int shares) throws Exception;
     String getStocksbySymbol(String symbol) throws Exception;
 }
+

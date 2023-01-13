@@ -1,4 +1,4 @@
-package service;
+package net.froihofer.service;
 
 
 
@@ -69,7 +69,7 @@ public class Stockmarket {
      * TradingWSException - in case of errors.
      */
 
-        public BigDecimal buyStock(String symbol, int shares) throws Exception {
+        public BigDecimal buyStock( String symbol, int shares) throws Exception {
 
             try{
                 return proxy.buy(symbol, shares);
@@ -120,98 +120,5 @@ public class Stockmarket {
         }
     }
 
-
-    //////////////
-    ////////////
-    // METHODS WITH OUTPUT /////////
-
-//    /**  Get StockQuotes (Symbol, Company Name, last known trade price)*/
-//    public Boolean getStockByCompanyNamelWithOutput(String companyName) {
-//        try {
-//            List<PublicStockQuote> stocks = getStockByCompanyName(companyName);
-//            if (stocks.isEmpty()) {
-//                System.out.println("Keine Firma zu der Eingabe \"" + companyName + "\" gefunden");
-//                return false;
-//            } else {
-//                stocks.forEach((x) -> System.out.println("Symbol: " + x.getSymbol() + " /Company Name: " + x.getCompanyName() + " /Last known trade-price: " + x.getLastTradePrice() + " /Shares left: " + x.getFloatShares()));
-//                return true;
-//            }
-//        } catch (
-//                Exception e) {
-//            System.out.println("Die Suchabfrage hat nicht gekplappt");
-//            return false;
-//        }
-//    }
-//
-//    /** Buy Shares of Stock
-//     * first check if symbol exists
-//     * then if enough shares are avaiable*/
-//    public BigDecimal buyStockWithOutput(String symbol, int shares) throws Exception {
-//        BigDecimal pricePerShare = BigDecimal.valueOf(0);
-//        PublicStockQuote quote;
-//
-//        //check if Symbol exists, if not Message + return value = 0;
-//        try {
-//           quote = getStockBySymbol(symbol);
-//        } catch (Exception e) {
-//            System.out.println("Es wurden leider keine Aktien zu \"" + symbol + "\"  gefunden");
-//            return pricePerShare;
-//        }
-//        //check if Stock has enough shares left
-//        //check fist if avaiable stocks are "null"
-//        if(quote.getFloatShares() == null){
-//            System.out.println("Aktien kaufen: Es sind leider nicht genug Shares übrig. Shares die noch für die Firma " + quote.getCompanyName() +" verfügbar sind :"+ quote.getFloatShares());
-//            return pricePerShare;
-//        }
-//        // then if the wanted shares are too much
-//        if(quote.getFloatShares().intValue() < shares){
-//            System.out.println("Aktien kaufen: Es sind leider nicht genug Shares übrig. Shares die noch für die Firma " + quote.getCompanyName() +" verfügbar sind :"+ quote.getFloatShares());
-//            return pricePerShare;
-//        }
-//
-//        try {
-//            pricePerShare = buyStock(symbol, shares);
-//            System.out.println("Sie haben " + shares + " Shares von der Aktie " + quote.getCompanyName() + " für je " + pricePerShare + " gekauft");
-//            return pricePerShare;
-//
-//        } catch (Exception e) {
-//            System.out.println("Stock konnte leider nicht gekauft werden, da nicht mehr genug Shares zur Verfügung stehen.");
-//            return pricePerShare;
-//        }
-//    }
-//
-//    /** Sell Shares of Stock
-//     * first check if symbol exists */
-//
-//    public BigDecimal sellStockWithOutput(String symbol, int shares) throws Exception {
-//        BigDecimal pricePerShareSell= BigDecimal.valueOf(0);
-//        //check if Symbol exists, if not Message + return value = 0;
-//        try {
-//            getStockBySymbol(symbol);
-//        } catch (Exception e) {
-//            System.out.println("Aktien verkaufen: Es wurden leider keine Aktien zu \"" + symbol + "\"  gefunden");
-//            return pricePerShareSell;
-//        }
-//        try {
-//            pricePerShareSell = sellStock(symbol, shares);
-//            System.out.println("Sie haben " + shares + " Shares der Aktie " + getStockBySymbol(symbol).getCompanyName() + " für je " + pricePerShareSell + " verkauft");
-//            return pricePerShareSell;
-//        } catch (Exception e) {
-//            System.out.println("Transaktion hat leider nicht geklappt");
-//            return pricePerShareSell;
-//        }
-//    }
-//
-//    public PublicStockQuote getStockBySymbolWithOutput(String symbol) throws Exception {
-//    PublicStockQuote stockQuoteToGetName;
-//        try
-//    {
-//        stockQuoteToGetName = getStockBySymbol(symbol);
-//        System.out.println("Der Name der Firma zum eingegebenen Symbol \"" + symbol+ "\"  ist: " + stockQuoteToGetName.getCompanyName());
-//        return stockQuoteToGetName;
-//    } catch (Exception e) {
-//        System.out.println("Es wurden leider keine Aktien zum Symbol \"" + symbol+ "\"  gefunden");
-//        return null;
-//    }}
 }
 

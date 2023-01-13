@@ -107,13 +107,44 @@ public class BankClient {
 
   private void customerMenu() {
     System.out.println("Customer Menu");
+    System.out.println("Was wollen Sie machen?");
+
+    System.out.println("1. Nach verfügbaren Aktien suchen");
+    System.out.println("2. Aktien kaufen");
+    System.out.println("3. Aktien verkaufen");
+    System.out.println("4. Ihr Depot abrufen");
+    System.out.println("5. Programm beenden");
+    System.out.println("Wählen Sie Ihre Aktion: ");
+
+    String userInput = input.next();
+    input.nextLine();
+
+    switch (userInput) {
+      case "1":
+        System.out.println("Nach verfügbaren Aktien suchen");
+        lookforStock();
+        break;
+      case "2":
+        System.out.println("Aktien kaufen");
+        buyStock();
+        break;
+      case "3":
+        System.out.println("Aktien verkaufen");
+        sellStock();
+        break;
+      case "4":
+
+        break;
+      case "5":
+        System.out.println("Programm wird nun beendet");
+        System.exit(0);
+      default:
+        System.out.println("Ungültige Eingabe, bitte geben Sie eine Ziffer zwischen 1 und 8 ein");
+        break;
+    }
   }
 
   private void employeeMenu() {
-   lookforStock("a");
-    buyStock("AACC", 2);
-    sellStock("AACC", 2);
-    getNameToSymbol("AACC");
 
     System.out.println("Was wollen Sie machen?");
 
@@ -121,10 +152,11 @@ public class BankClient {
     System.out.println("2. Neues Mitarbeiterkonto anlegen");
     System.out.println("3. Benutzerkonto suchen");
     System.out.println("4. Nach verfügbaren Aktien suchen");
-    System.out.println("5. Aktien kaufen/verkaufen für Kunden");
-    System.out.println("6. Depot vom Kunden abrufen");
-    System.out.println("7. Volumenabfrage");
-    System.out.println("8. Programm beenden");
+    System.out.println("5. Aktien kaufen für Kunden");
+    System.out.println("6. Aktien verkaufen für Kunden");
+    System.out.println("7. Depot vom Kunden abrufen");
+    System.out.println("8. Volumenabfrage");
+    System.out.println("9. Programm beenden");
     System.out.println("Wählen Sie Ihre Aktion: ");
 
     String userInput = input.next();
@@ -142,17 +174,23 @@ public class BankClient {
         break;
       case "4":
         System.out.println("Nach verfügbaren Aktien suchen");
+        lookforStock();
         break;
       case "5":
-        System.out.println("Aktien kaufen/verkaufen für Kunden");
+        System.out.println("Aktien kaufen für Kunden");
+        buyStockForCostumer();
         break;
       case "6":
-        System.out.println("Depot vom Kunden abrufen");
+        System.out.println("Aktien verkaufen für Kunden");
+        sellStockForCustomer();
         break;
       case "7":
-        System.out.println("Volumenabfrage");
+        System.out.println("Depot vom Kunden abrufen");
         break;
       case "8":
+        System.out.println("Volumenabfrage");
+        break;
+      case "9":
         System.out.println("Programm wird nun beendet");
         System.exit(0);
       default:
@@ -185,22 +223,46 @@ public class BankClient {
     client.run();
   }
 
-  public void lookforStock(String stockname){
+  public void lookforStock(){
     List<String> output;
+    System.out.println("Bitte geben Sie den Suchbegriff für die gewünschte Aktie ein (mind 2 Buchstaben):");
+    String stockSearch = input.nextLine();
     try {
-      output = bank.getStocksbyCompanyName(stockname);
+      output = bank.getStocksbyCompanyName(stockSearch);
       if (!output.equals(null)){
         output.forEach((x) -> System.out.println(x));
 
       }}
     catch (Exception e) {
-      e.printStackTrace();
-      System.out.println("Die Suchabfrage hat nicht funktioniert");
+      System.out.println("Leider hat die Suche nach " + stockSearch+ " keine Resultate ergeben." );
+      lookforStock();
+    }
+    switch (bank.checkPersonRole()) {
+      case "customer":
+        customerMenu();
+        break;
+      case "employee":
+        employeeMenu();
+        break;
     }
   }
-  public void sellStock(String symbol, int shares){
+  public void sellStock(){
+    System.out.println("Bitte geben Sie das Symbol für die gewünschte Aktie ein:");
+    String symbol = input.nextLine();
+    String output;
     try{
-      // TO DO, ID von KUNDEN bekommen
+      output = bank.getStocksbySymbol(symbol);
+      System.out.println(output);
+    }catch (Exception e) {
+      System.out.println(e.getMessage());
+      sellStock();
+    }
+    System.out.println("Bitte geben Sie die Anzahl der Aktien ein, die Sie für Ihren Kunden/ Ihre Kundin verkaufen wollen");
+    int shares = Integer.valueOf(input.nextLine());
+    try{
+      /** TO DO, ID von KUNDEN bekommen
+       * ZUR ZEIT noch hardgecodet
+       */
 
       bank.sellStocks(4, symbol, shares);
       System.out.println("Die Aktie wurde erfolgreich verkauft");
@@ -208,11 +270,73 @@ public class BankClient {
     catch (Exception e){
       System.out.println(e.getMessage());
     }
+    switch (bank.checkPersonRole()) {
+      case "customer":
+        customerMenu();
+        break;
+      case "employee":
+        employeeMenu();
+        break;
+    }
   }
 
-  public void buyStock(String symbol, int shares){
+  public void sellStockForCustomer(){
+
+
+    System.out.println("Bitte geben Sie das Symbol für die gewünschte Aktie ein:");
+    String symbol = input.nextLine();
+    String output;
+    try{
+      output = bank.getStocksbySymbol(symbol);
+      System.out.println(output);
+    }catch (Exception e) {
+      System.out.println(e.getMessage());
+      sellStockForCustomer();
+    }
+    System.out.println("Bitte geben Sie die Anzahl der Aktien ein, die Sie verkaufen wollen");
+    int shares = Integer.valueOf(input.nextLine());
+    System.out.println("Bitte geben Sie die Kundennummer des Kunden ein:");
+    int customerID = Integer.valueOf(input.nextLine());
+    /** TO DO: überprüfen ob Kundennummer korrekt ist
+     *
+     */
+
     try{
       // TO DO, ID von KUNDEN bekommen
+
+      bank.sellStocks(customerID, symbol, shares);
+      System.out.println("Die Aktie wurde erfolgreich verkauft");
+    }
+    catch (Exception e){
+      System.out.println(e.getMessage());
+    }
+    switch (bank.checkPersonRole()) {
+      case "customer":
+        customerMenu();
+        break;
+      case "employee":
+        employeeMenu();
+        break;
+    }
+  }
+
+  public void buyStock(){
+    System.out.println("Bitte geben Sie das Symbol für die gewünschte Aktie ein:");
+    String symbol = input.nextLine();
+    String output;
+    try{
+      output = bank.getStocksbySymbol(symbol);
+      System.out.println(output);
+    }catch (Exception e) {
+      System.out.println(e.getMessage());
+      buyStock();
+    }
+    System.out.println("Bitte geben Sie die Anzahl der Aktien ein, die Sie kaufen wollen");
+    int shares = Integer.valueOf(input.nextLine());
+    try{
+      /** TO DO, ID von KUNDEN bekommen
+       *
+       */
 
       bank.buyStocks(4, symbol, shares);
       System.out.println("Die Aktie wurde erfolgreich gekauft");
@@ -220,16 +344,55 @@ public class BankClient {
     catch (Exception e){
       System.out.println(e.getMessage());
     }
+    switch (bank.checkPersonRole()) {
+      case "customer":
+        customerMenu();
+        break;
+      case "employee":
+        employeeMenu();
+        break;
+    }
   }
 
-  public void getNameToSymbol(String symbol){
-    String aktie;
+  public void buyStockForCostumer(){
+
+    System.out.println("Bitte geben Sie das Symbol für die gewünschte Aktie ein:");
+    String symbol = input.nextLine();
+    String output;
+
     try{
-      aktie= bank.getStocksbySymbol(symbol);
-      System.out.println(aktie);
+      output = bank.getStocksbySymbol(symbol);
+      System.out.println(output);
+    }catch (Exception e) {
+      System.out.println(e.getMessage());
+      buyStockForCostumer();
     }
-    catch(Exception e){
+
+    System.out.println("Bitte geben Sie die Anzahl der Aktien ein, die Sie für Ihren Kunden/ Ihre Kundin kaufen wollen");
+    int shares = Integer.valueOf(input.nextLine());
+    System.out.println("Bitte geben Sie die Kundennummer des Kunden ein:");
+    int customerID = Integer.valueOf(input.nextLine());
+
+    /** TO DO: überprüfen ob Kundennummer korrekt ist
+     *
+     */
+    try{
+      // TO DO, ID von KUNDEN bekommen
+
+      bank.buyStocks(customerID, symbol, shares);
+      System.out.println("Die Aktie wurde erfolgreich gekauft");
+    }
+    catch (Exception e){
       System.out.println(e.getMessage());
     }
-  }
-}
+    switch (bank.checkPersonRole()) {
+      case "customer":
+        customerMenu();
+        break;
+      case "employee":
+        employeeMenu();
+        break;
+    }
+  }}
+
+

@@ -10,7 +10,7 @@ import net.froihofer.util.mapper.UserMapper;
 import net.froihofer.persistence.dao.CustomerDAO;
 import net.froihofer.persistence.entity.Customer;
 import net.froihofer.util.jboss.WildflyAuthDBHelper;
-import service.Stockmarket;
+
 
 import javax.annotation.Resource;
 import javax.annotation.security.DeclareRoles;
@@ -102,7 +102,7 @@ public class BankServiceImpl implements BankInterface {
                 returnList.add("Keine Firma zu der Eingabe \"" + companyName + "\" gefunden");
                 return null;
             } else {
-                stocks.forEach((x) -> returnList.add(new String("Symbol: " + x.getSymbol() + " /Company Name: " + x.getCompanyName() + " /Last known trade-price: " + x.getLastTradePrice() + " /Shares left: " + x.getFloatShares())));
+                stocks.forEach((x) -> returnList.add(new String("Symbol: " + x.getSymbol() + " /Company Name: " + x.getCompanyName() + " /Last known trade-price: " + x.getLastTradePrice() + " Kröten /Shares left: " + x.getFloatShares())));
                 return returnList;
             }
         } catch
@@ -135,7 +135,7 @@ public class BankServiceImpl implements BankInterface {
 
         try {
             pricePerShare = st.buyStock(symbol, shares);
-            System.out.println("Sie haben " + shares + " Shares von der Aktie " + quote.getCompanyName() + " für je " + pricePerShare + " gekauft");
+            System.out.println("Sie haben " + shares + " Shares von der Aktie " + quote.getCompanyName() + " für je " + pricePerShare + "Kröten gekauft");
             return pricePerShare;
 
             /** TO DO
@@ -158,7 +158,7 @@ public class BankServiceImpl implements BankInterface {
         }
         try {
             pricePerShareSell = st.sellStock(symbol, shares);
-            System.out.println("Sie haben " + shares + " Shares der Aktie " + st.getStockBySymbol(symbol).getCompanyName() + " für je " + pricePerShareSell + " verkauft");
+            System.out.println("Sie haben " + shares + " Shares der Aktie " + st.getStockBySymbol(symbol).getCompanyName() + " für je " + pricePerShareSell + "Kröten verkauft");
             return pricePerShareSell;
             /** TO DO
              * EINTRAG IN KUNDENDATENBANK
@@ -175,11 +175,10 @@ public class BankServiceImpl implements BankInterface {
         try
         {
             stockQuoteToGetName = st.getStockBySymbol(symbol);
-            aktie ="Der Name der Firma zum eingegebenen Symbol \"" + symbol+ "\"  ist: " + stockQuoteToGetName.getCompanyName();
+            aktie ="\nDer Name der Firma zum eingegebenen Symbol \"" + symbol+ "\"  ist: " + stockQuoteToGetName.getCompanyName() + "\n  Derzeit stehen " + stockQuoteToGetName.getFloatShares() + " Shares am Stockmarket zu diesr Aktie zur Verfügung. \n  Der  aktuelle  Preis pro Share ist " + stockQuoteToGetName.getLastTradePrice() + " Kröten.";
             return aktie;
         } catch (Exception e) {
             throw new Exception("Es wurden leider keine Aktien zum Symbol \"" + symbol+ "\"  gefunden");
         }}
 
 }
-
