@@ -250,6 +250,7 @@ public class BankClient {
     System.out.println("Bitte geben Sie das Symbol für die gewünschte Aktie ein:");
     String symbol = input.nextLine();
     String output;
+    String output2;
     try{
       output = bank.getStocksbySymbol(symbol);
       System.out.println(output);
@@ -264,8 +265,8 @@ public class BankClient {
        * ZUR ZEIT noch hardgecodet
        */
 
-      bank.sellStocks(4, symbol, shares);
-      System.out.println("Die Aktie wurde erfolgreich verkauft");
+      output2= bank.sellStocks(4, symbol, shares);
+      System.out.println(output2);
     }
     catch (Exception e){
       System.out.println(e.getMessage());
@@ -286,6 +287,7 @@ public class BankClient {
     System.out.println("Bitte geben Sie das Symbol für die gewünschte Aktie ein:");
     String symbol = input.nextLine();
     String output;
+    String output2;
     try{
       output = bank.getStocksbySymbol(symbol);
       System.out.println(output);
@@ -304,8 +306,8 @@ public class BankClient {
     try{
       // TO DO, ID von KUNDEN bekommen
 
-      bank.sellStocks(customerID, symbol, shares);
-      System.out.println("Die Aktie wurde erfolgreich verkauft");
+      output2 = bank.sellStocks(customerID, symbol, shares);
+      System.out.println(output2);
     }
     catch (Exception e){
       System.out.println(e.getMessage());
@@ -324,6 +326,7 @@ public class BankClient {
     System.out.println("Bitte geben Sie das Symbol für die gewünschte Aktie ein:");
     String symbol = input.nextLine();
     String output;
+    String output2;
     try{
       output = bank.getStocksbySymbol(symbol);
       System.out.println(output);
@@ -338,8 +341,8 @@ public class BankClient {
        *
        */
 
-      bank.buyStocks(4, symbol, shares);
-      System.out.println("Die Aktie wurde erfolgreich gekauft");
+     output2=  bank.buyStocks(4, symbol, shares);
+      System.out.println(output2);
     }
     catch (Exception e){
       System.out.println(e.getMessage());
@@ -359,6 +362,7 @@ public class BankClient {
     System.out.println("Bitte geben Sie das Symbol für die gewünschte Aktie ein:");
     String symbol = input.nextLine();
     String output;
+    String output2;
 
     try{
       output = bank.getStocksbySymbol(symbol);
@@ -379,8 +383,8 @@ public class BankClient {
     try{
       // TO DO, ID von KUNDEN bekommen
 
-      bank.buyStocks(customerID, symbol, shares);
-      System.out.println("Die Aktie wurde erfolgreich gekauft");
+      output2 = bank.buyStocks(customerID, symbol, shares);
+      System.out.println(output2);
     }
     catch (Exception e){
       System.out.println(e.getMessage());

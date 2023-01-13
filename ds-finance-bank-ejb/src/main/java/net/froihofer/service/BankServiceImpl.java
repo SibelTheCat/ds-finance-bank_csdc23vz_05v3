@@ -107,17 +107,18 @@ public class BankServiceImpl implements BankInterface {
             }
         } catch
         (Exception e) {
-            throw new Exception();
+            throw new Exception("Etwas ist schief gelaufen");
         }
 
     }
     @Override
     @RolesAllowed({"customer", "employee"})
-    public BigDecimal buyStocks(int costumerID, String symbol, int shares) throws Exception {
-        BigDecimal pricePerShare = BigDecimal.valueOf(0);
+    public String buyStocks(int costumerID, String symbol, int shares) throws Exception {
+        BigDecimal pricePerShare;
         PublicStockQuote quote;
+        String output;
 
-        //check if Symbol exists, if not Message + return value = 0;
+        //check if Symbol exists, if not Message + return value
         try {
             quote = st.getStockBySymbol(symbol);
         } catch (Exception e) {
@@ -126,20 +127,21 @@ public class BankServiceImpl implements BankInterface {
         //check if Stock has enough shares left
         //check fist if avaiable stocks are "null"
         if (quote.getFloatShares() == null) {
-            throw new Exception("Aktien kaufen: Es sind leider nicht genug Shares übrig. Shares die noch für die Firma " + quote.getCompanyName() + " verfügbar sind :" + quote.getFloatShares());
+            throw new Exception("Es sind leider nicht genug Shares übrig. Shares die noch für die Firma " + quote.getCompanyName() + " verfügbar sind :" + quote.getFloatShares() + " Shares");
         }
         // then if the wanted shares are too much
         if (quote.getFloatShares().intValue() < shares) {
-            throw new Exception("Aktien kaufen: Es sind leider nicht genug Shares übrig. Shares die noch für die Firma " + quote.getCompanyName() + " verfügbar sind :" + quote.getFloatShares());
+            throw new Exception("Es sind leider nicht genug Shares übrig. Shares die noch für die Firma " + quote.getCompanyName() + " verfügbar sind :" + quote.getFloatShares() + " Shares");
         }
 
         try {
             pricePerShare = st.buyStock(symbol, shares);
-            System.out.println("Sie haben " + shares + " Shares von der Aktie " + quote.getCompanyName() + " für je " + pricePerShare + "Kröten gekauft");
-            return pricePerShare;
+            output = "Sie haben " + shares + " Shares von der Aktie " + quote.getCompanyName() + " für je " + pricePerShare + " Kröten gekauft";
+            return output;
 
             /** TO DO
              * EINTRAG IN KUNDENDATENBANK
+             * Den Preis der Aktie ist unter pricePerShare gespeichert
              */
 
         } catch (Exception e) {
@@ -148,8 +150,9 @@ public class BankServiceImpl implements BankInterface {
     }
     @Override
     @RolesAllowed({"customer", "employee"})
-    public BigDecimal sellStocks(int costumerID, String symbol, int shares) throws Exception {
+    public String sellStocks(int costumerID, String symbol, int shares) throws Exception {
         BigDecimal pricePerShareSell= BigDecimal.valueOf(0);
+        String output;
         //check if Symbol exists, if not Message + return value = 0;
         try {
             st.getStockBySymbol(symbol);
@@ -158,10 +161,11 @@ public class BankServiceImpl implements BankInterface {
         }
         try {
             pricePerShareSell = st.sellStock(symbol, shares);
-            System.out.println("Sie haben " + shares + " Shares der Aktie " + st.getStockBySymbol(symbol).getCompanyName() + " für je " + pricePerShareSell + "Kröten verkauft");
-            return pricePerShareSell;
+            output ="Sie haben " + shares + " Shares der Aktie " + st.getStockBySymbol(symbol).getCompanyName() + " für je " + pricePerShareSell + "Kröten verkauft";
+            return output;
             /** TO DO
              * EINTRAG IN KUNDENDATENBANK
+             * Aktuelle Kosten der Aktie sind in pricePerShareSell
              */
         } catch (Exception e) {
             throw new Exception("Transaktion hat leider nicht geklappt");

@@ -16,8 +16,8 @@ public interface BankInterface {
     EmployeeDTO createEmployee(String firstName, String lastname, String password);
     ArrayList<CustomerDTO> searchCustomer(String firstName, String lastName);
     List<String> getStocksbyCompanyName(String companyName) throws Exception;
-    BigDecimal sellStocks(int costumerID, String symbol, int shares) throws Exception;
-    BigDecimal buyStocks(int costumerID, String symbol, int shares) throws Exception;
+    String sellStocks(int costumerID, String symbol, int shares) throws Exception;
+    String buyStocks(int costumerID, String symbol, int shares) throws Exception;
     String getStocksbySymbol(String symbol) throws Exception;
 }
 

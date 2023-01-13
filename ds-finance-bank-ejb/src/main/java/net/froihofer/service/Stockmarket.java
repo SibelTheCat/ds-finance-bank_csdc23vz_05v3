@@ -92,7 +92,7 @@ public class Stockmarket {
         try {
             return proxy.sell(symbol, shares);
         } catch (TradingWSException_Exception e) {
-            throw new Exception("Transaktion hat nicht geklappt)");
+            throw new Exception();
         }
     }
 
@@ -116,7 +116,7 @@ public class Stockmarket {
             stock = proxy.getStockQuotes(symbolsList);
             return stock.get(0);
         } catch (TradingWSException_Exception e) {
-            throw new Exception("Keine Stocks für dieses Symbol gefunden)");
+            throw new Exception();
         }
     }
 
