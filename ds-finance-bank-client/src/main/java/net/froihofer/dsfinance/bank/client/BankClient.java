@@ -1,6 +1,7 @@
 package net.froihofer.dsfinance.bank.client;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 import java.util.Scanner;
 import javax.naming.Context;
@@ -109,6 +110,11 @@ public class BankClient {
   }
 
   private void employeeMenu() {
+   lookforStock("a");
+    buyStock("AACC", 2);
+    sellStock("AACC", 2);
+    getNameToSymbol("AACC");
+
     System.out.println("Was wollen Sie machen?");
 
     System.out.println("1. Neues Kundenkonto anlegen");
@@ -177,5 +183,53 @@ public class BankClient {
   public static void main(String[] args) {
     BankClient client = new BankClient();
     client.run();
+  }
+
+  public void lookforStock(String stockname){
+    List<String> output;
+    try {
+      output = bank.getStocksbyCompanyName(stockname);
+      if (!output.equals(null)){
+        output.forEach((x) -> System.out.println(x));
+
+      }}
+    catch (Exception e) {
+      e.printStackTrace();
+      System.out.println("Die Suchabfrage hat nicht funktioniert");
+    }
+  }
+  public void sellStock(String symbol, int shares){
+    try{
+      // TO DO, ID von KUNDEN bekommen
+
+      bank.sellStocks(4, symbol, shares);
+      System.out.println("Die Aktie wurde erfolgreich verkauft");
+    }
+    catch (Exception e){
+      System.out.println(e.getMessage());
+    }
+  }
+
+  public void buyStock(String symbol, int shares){
+    try{
+      // TO DO, ID von KUNDEN bekommen
+
+      bank.buyStocks(4, symbol, shares);
+      System.out.println("Die Aktie wurde erfolgreich gekauft");
+    }
+    catch (Exception e){
+      System.out.println(e.getMessage());
+    }
+  }
+
+  public void getNameToSymbol(String symbol){
+    String aktie;
+    try{
+      aktie= bank.getStocksbySymbol(symbol);
+      System.out.println(aktie);
+    }
+    catch(Exception e){
+      System.out.println(e.getMessage());
+    }
   }
 }
