@@ -1,5 +1,7 @@
 package net.froihofer.dsfinance.bank.client;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 import java.util.Scanner;
 import javax.naming.Context;
@@ -7,6 +9,7 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import dto.CustomerDTO;
+import dto.EmployeeDTO;
 import interfaces.BankInterface;
 import net.froihofer.util.AuthCallbackHandler;
 import net.froihofer.util.WildflyJndiLookupHelper;
@@ -38,7 +41,6 @@ public class BankClient {
 
       switch (bank.checkPersonRole()) {
         case "customer":
-          createCustomer();
           customerMenu();
           break;
         case "employee":
@@ -60,7 +62,7 @@ public class BankClient {
     String id = input.nextLine();
     System.out.println("Passwort: ");
     String password = input.nextLine();
-    getRmiProxy(id, password); // 21 : test --> customer
+    getRmiProxy(id, password); // 21 : test --> customer // 26 : alex --> employee
   }
 
   private void createCustomer() {
@@ -84,17 +86,150 @@ public class BankClient {
     }
   }
 
+  private void createEmployee() {
+    System.out.println("Bitte geben Sie die Daten des Mitarbeiters ein");
+    System.out.println("Vorname: ");
+    String firstName = input.nextLine();
+    System.out.println("Nachname: ");
+    String lastName = input.nextLine();
+    System.out.println("Passwort: ");
+    String password = input.nextLine();
+
+    try {
+      EmployeeDTO newEmployee = bank.createEmployee(firstName, lastName, password);
+      System.out.println("Mitarbeiter " + newEmployee.getId() + " erfolgreich erstellt");
+      System.out.println("Der Login erfolgt durch die zugewiesene Mitarbeiter Nummer und das erstellte Passwort");
+    } catch (Exception e) {
+      e.printStackTrace();
+      System.out.println("Etwas ist schiefgelaufen wenden Sie sich an den Technischen Support");
+    }
+  }
+
   private void customerMenu() {
     System.out.println("Customer Menu");
   }
 
   private void employeeMenu() {
-    System.out.println("Employee Menu");
+   lookforStock("a");
+    buyStock("AACC", 2);
+    sellStock("AACC", 2);
+    getNameToSymbol("AACC");
+
+    System.out.println("Was wollen Sie machen?");
+
+    System.out.println("1. Neues Kundenkonto anlegen");
+    System.out.println("2. Neues Mitarbeiterkonto anlegen");
+    System.out.println("3. Benutzerkonto suchen");
+    System.out.println("4. Nach verfügbaren Aktien suchen");
+    System.out.println("5. Aktien kaufen/verkaufen für Kunden");
+    System.out.println("6. Depot vom Kunden abrufen");
+    System.out.println("7. Volumenabfrage");
+    System.out.println("8. Programm beenden");
+    System.out.println("Wählen Sie Ihre Aktion: ");
+
+    String userInput = input.next();
+    input.nextLine();
+
+    switch (userInput) {
+      case "1":
+        createCustomer();
+        break;
+      case "2":
+        createEmployee();
+        break;
+      case "3":
+        searchCustomer();
+        break;
+      case "4":
+        System.out.println("Nach verfügbaren Aktien suchen");
+        break;
+      case "5":
+        System.out.println("Aktien kaufen/verkaufen für Kunden");
+        break;
+      case "6":
+        System.out.println("Depot vom Kunden abrufen");
+        break;
+      case "7":
+        System.out.println("Volumenabfrage");
+        break;
+      case "8":
+        System.out.println("Programm wird nun beendet");
+        System.exit(0);
+      default:
+        System.out.println("Ungültige Eingabe, bitte geben Sie eine Ziffer zwischen 1 und 8 ein");
+        break;
+    }
+  }
+
+  private void searchCustomer() {
+    System.out.println("Um einen Kunden zu suchen geben Sie dessen Vor- und Nachnamen ein.");
+    System.out.println("Vorname: ");
+    String firstName = input.nextLine();
+    System.out.println("Nachname: ");
+    String lastName = input.nextLine();
+
+    try {
+      ArrayList<CustomerDTO> customers = bank.searchCustomer(firstName, lastName);
+      System.out.println("Folgende Kunden wurden gefunden: ");
+      for (CustomerDTO customerDTO : customers) {
+        System.out.println("ID: " + customerDTO.getId() + "\nVorname: " + customerDTO.getFirstName() + "\nNachname: " + customerDTO.getLastName());
+      }
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
   }
 
 
   public static void main(String[] args) {
     BankClient client = new BankClient();
     client.run();
+  }
+
+  public void lookforStock(String stockname){
+    List<String> output;
+    try {
+      output = bank.getStocksbyCompanyName(stockname);
+      if (!output.equals(null)){
+        output.forEach((x) -> System.out.println(x));
+
+      }}
+    catch (Exception e) {
+      e.printStackTrace();
+      System.out.println("Die Suchabfrage hat nicht funktioniert");
+    }
+  }
+  public void sellStock(String symbol, int shares){
+    try{
+      // TO DO, ID von KUNDEN bekommen
+
+      bank.sellStocks(4, symbol, shares);
+      System.out.println("Die Aktie wurde erfolgreich verkauft");
+    }
+    catch (Exception e){
+      System.out.println(e.getMessage());
+    }
+  }
+
+  public void buyStock(String symbol, int shares){
+    try{
+      // TO DO, ID von KUNDEN bekommen
+
+      bank.buyStocks(4, symbol, shares);
+      System.out.println("Die Aktie wurde erfolgreich gekauft");
+    }
+    catch (Exception e){
+      System.out.println(e.getMessage());
+    }
+  }
+
+  public void getNameToSymbol(String symbol){
+    String aktie;
+    try{
+      aktie= bank.getStocksbySymbol(symbol);
+      System.out.println(aktie);
+    }
+    catch(Exception e){
+      System.out.println(e.getMessage());
+    }
   }
 }
