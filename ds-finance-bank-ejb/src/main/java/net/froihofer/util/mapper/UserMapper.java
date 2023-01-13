@@ -1,7 +1,9 @@
 package net.froihofer.util.mapper;
 
 import dto.CustomerDTO;
+import dto.EmployeeDTO;
 import net.froihofer.persistence.entity.Customer;
+import net.froihofer.persistence.entity.Employee;
 
 public class UserMapper {
 
@@ -25,5 +27,15 @@ public class UserMapper {
         customer.setId(customerDTO.getId());
 
         return customer;
+    }
+
+    public static EmployeeDTO employeeToDTO(Employee employee) {
+        EmployeeDTO employeeDTO = new EmployeeDTO();
+        employeeDTO.setFirstName(employee.getFirstName());
+        employeeDTO.setLastName(employee.getLastName());
+        employeeDTO.setPassword(employee.getPassword());
+        employeeDTO.setId(employee.getId());
+
+        return employeeDTO;
     }
 }
