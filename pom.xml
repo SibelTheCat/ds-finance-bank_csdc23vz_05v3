@@ -34,7 +34,7 @@
       <version>2.3.1</version>
     </dependency>
   </dependencies>
-  
+
   <modules>
     <module>ds-finance-bank-common</module>
     <module>ds-finance-bank-ejb</module>
