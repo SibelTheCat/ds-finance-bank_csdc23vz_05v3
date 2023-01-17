@@ -1,6 +1,6 @@
-package net.froihofer.persistence.dao;
+package persistence.dao;
 
-import net.froihofer.persistence.entity.Employee;
+import persistence.entity.Employee;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;

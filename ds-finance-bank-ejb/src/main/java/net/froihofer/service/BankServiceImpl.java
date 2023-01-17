@@ -4,17 +4,18 @@ import dto.CustomerDTO;
 import dto.EmployeeDTO;
 import interfaces.BankInterface;
 import net.froihofer.dsfinance.ws.trading.PublicStockQuote;
-import net.froihofer.persistence.dao.EmployeeDAO;
-import net.froihofer.persistence.entity.Employee;
+import persistence.dao.DepotDAO;
+import persistence.dao.EmployeeDAO;
+import persistence.entity.Depot;
+import persistence.entity.Employee;
 import net.froihofer.util.mapper.UserMapper;
-import net.froihofer.persistence.dao.CustomerDAO;
-import net.froihofer.persistence.entity.Customer;
+import persistence.dao.CustomerDAO;
+import persistence.entity.Customer;
 import net.froihofer.util.jboss.WildflyAuthDBHelper;
 
 
 import javax.annotation.Resource;
 import javax.annotation.security.DeclareRoles;
-import javax.annotation.security.PermitAll;
 import javax.annotation.security.RolesAllowed;
 import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
@@ -36,6 +37,9 @@ public class BankServiceImpl implements BankInterface {
     private CustomerDAO customerDAO;
     @Inject
     private EmployeeDAO employeeDAO;
+
+    @Inject
+    private DepotDAO depotDAO;
     Stockmarket st = new Stockmarket();
 
     @Override
@@ -47,6 +51,7 @@ public class BankServiceImpl implements BankInterface {
     @Override
     @RolesAllowed("employee")
     public EmployeeDTO createEmployee(String firstName, String lastname, String password) {
+
         Employee employee = employeeDAO.createEmployee(firstName, lastname, password);
 
         createWildflyUser(String.valueOf(employee.getId()), employee.getPassword(), "employee");
@@ -57,11 +62,17 @@ public class BankServiceImpl implements BankInterface {
     @Override
     @RolesAllowed("employee")
     public CustomerDTO createCustomer(String firstName, String lastname, String password, String address) {
-        Customer customer = customerDAO.createCustomer(firstName, lastname, password, address);
+        /** neu
+         *
+         */
+        Depot depot = depotDAO.createDepot();
+
+        Customer customer = customerDAO.createCustomer(firstName, lastname, password, address, depot);
 
         createWildflyUser(String.valueOf(customer.getId()), customer.getPassword(), "customer");
 
         return UserMapper.customerToDTO(customer);
+
     }
 
     @Override

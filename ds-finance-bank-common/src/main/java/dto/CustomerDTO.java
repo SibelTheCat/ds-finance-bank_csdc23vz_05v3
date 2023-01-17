@@ -4,6 +4,8 @@ public class CustomerDTO extends PersonDTO {
 
     private String address;
 
+    private DepotDTO depot;
+
     public CustomerDTO(String address) {
         this.address = address;
     }
@@ -21,5 +23,13 @@ public class CustomerDTO extends PersonDTO {
 
     public void setAddress(String address) {
         this.address = address;
+    }
+
+    public DepotDTO getDepot() {
+        return depot;
+    }
+
+    public void setDepot(DepotDTO depot) {
+        this.depot = depot;
     }
 }

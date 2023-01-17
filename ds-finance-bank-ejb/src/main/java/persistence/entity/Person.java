@@ -1,4 +1,4 @@
-package net.froihofer.persistence.entity;
+package persistence.entity;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;

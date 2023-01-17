@@ -1,6 +1,7 @@
-package net.froihofer.persistence.dao;
+package persistence.dao;
 
-import net.froihofer.persistence.entity.Customer;
+import persistence.entity.Customer;
+import persistence.entity.Depot;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -13,12 +14,17 @@ public class CustomerDAO {
     @PersistenceContext
     private EntityManager entityManager;
 
-    public Customer createCustomer(String firstName, String lastName, String address, String password) {
+    public Customer createCustomer(String firstName, String lastName, String address, String password, Depot depot) {
         Customer customer = new Customer();
         customer.setFirstName(firstName);
         customer.setLastName(lastName);
         customer.setPassword(password);
         customer.setAddress(address);
+
+        /** hinzugefügt
+         *
+         */
+        customer.setDepot(depot);
 
         entityManager.persist(customer);
         entityManager.flush();

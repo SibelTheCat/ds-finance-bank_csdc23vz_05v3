@@ -1,12 +1,28 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<persistence version="2.0" xmlns="http://java.sun.com/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd">
+<persistence version="2.0" xmlns="http://java.sun.com/xml/ns/persistence"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd">
+
   <persistence-unit name="ds-finance-bank-persunit" transaction-type="JTA">
-    <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
-    <jta-data-source>java:/datasources/DsFinanceBankDS</jta-data-source>
+    <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider> <!-- Init. Klasse der JPA Implementierung -->
+    <jta-data-source>java:/datasources/DsFinanceBankDS</jta-data-source> <!-- Namen der Schnittstelle zur DB über JDBC im JNDI -->
+
+    <!-- Liste aller Klassen Entity Klassen aus der Applikation -->
+
+    <class>persistence.entity.Customer</class>
+    <class>persistence.entity.Depot</class>
+    <class>persistence.entity.Employee</class>
+    <class>persistence.entity.Stock</class>
+
+
+    <!-- Klassen werden auch als Entities berücksichtigt, wenn nicht gelistet -->
     <exclude-unlisted-classes>false</exclude-unlisted-classes>
+
     <properties>
       <property name="hibernate.hbm2ddl.auto" value="update"/>
       <property name="hibernate.dialect" value="org.hibernate.dialect.H2Dialect"/>
+      <property name="toplink.ddl-generation" value="create-tables" />
     </properties>
   </persistence-unit>
+
 </persistence>

@@ -4,7 +4,6 @@ import dto.CustomerDTO;
 import dto.EmployeeDTO;
 
 import javax.ejb.Remote;
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 

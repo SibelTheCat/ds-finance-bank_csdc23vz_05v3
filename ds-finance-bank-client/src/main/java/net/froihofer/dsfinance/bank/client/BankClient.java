@@ -77,8 +77,14 @@ public class BankClient {
     String password = input.nextLine();
 
     try {
-      CustomerDTO newCustomer = bank.createCustomer(firstName, lastName, address, password);
+     CustomerDTO newCustomer = bank.createCustomer(firstName, lastName, address, password);
+
       System.out.println("Kunde " + newCustomer.getId() + " erfolgreich erstellt");
+
+      //zum testen
+      System.out.println(newCustomer.getDepot().getDepotID());
+
+
       System.out.println("Der Login erfolgt durch die zugewiesene Kunden Nummer und das erstellte Passwort");
     } catch (Exception e) {
       e.printStackTrace();
