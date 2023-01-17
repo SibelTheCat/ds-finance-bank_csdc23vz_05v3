@@ -8,8 +8,10 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
+import com.ctc.wstx.exc.WstxOutputException;
 import dto.CustomerDTO;
 import dto.EmployeeDTO;
+import dto.StockDTO;
 import interfaces.BankInterface;
 import net.froihofer.util.AuthCallbackHandler;
 import net.froihofer.util.WildflyJndiLookupHelper;
@@ -82,13 +84,22 @@ public class BankClient {
       System.out.println("Kunde " + newCustomer.getId() + " erfolgreich erstellt");
 
       //zum testen
-      System.out.println(newCustomer.getDepot().getDepotID());
+     // System.out.println(newCustomer.getDepot().getDepotID());
 
 
       System.out.println("Der Login erfolgt durch die zugewiesene Kunden Nummer und das erstellte Passwort");
     } catch (Exception e) {
       e.printStackTrace();
       System.out.println("Etwas ist schiefgelaufen wenden Sie sich an den Technischen Support");
+    }
+    System.out.println("");
+    switch (bank.checkPersonRole()) {
+      case "customer":
+        customerMenu();
+        break;
+      case "employee":
+        employeeMenu();
+        break;
     }
   }
 
@@ -109,9 +120,18 @@ public class BankClient {
       e.printStackTrace();
       System.out.println("Etwas ist schiefgelaufen wenden Sie sich an den Technischen Support");
     }
+    System.out.println("");
+    switch (bank.checkPersonRole()) {
+      case "customer":
+        customerMenu();
+        break;
+      case "employee":
+        employeeMenu();
+        break;
+    }
   }
 
-  private void customerMenu() {
+  private void customerMenu()  {
     System.out.println("Customer Menu");
     System.out.println("Was wollen Sie machen?");
 
@@ -139,7 +159,8 @@ public class BankClient {
         sellStock();
         break;
       case "4":
-
+        System.out.println("Ihr Depot enhält folgenden Aktieninhalt");
+        showDepot();
         break;
       case "5":
         System.out.println("Programm wird nun beendet");
@@ -192,6 +213,7 @@ public class BankClient {
         break;
       case "7":
         System.out.println("Depot vom Kunden abrufen");
+        showDepotforCustomer();
         break;
       case "8":
         System.out.println("Volumenabfrage");
@@ -221,6 +243,15 @@ public class BankClient {
     } catch (Exception e) {
       e.printStackTrace();
     }
+    System.out.println("");
+    switch (bank.checkPersonRole()) {
+      case "customer":
+        customerMenu();
+        break;
+      case "employee":
+        employeeMenu();
+        break;
+    }
   }
 
 
@@ -229,7 +260,7 @@ public class BankClient {
     client.run();
   }
 
-  public void lookforStock(){
+  public void lookforStock() {
     List<String> output;
     System.out.println("Bitte geben Sie den Suchbegriff für die gewünschte Aktie ein (mind 2 Buchstaben):");
     String stockSearch = input.nextLine();
@@ -243,6 +274,7 @@ public class BankClient {
       System.out.println("Leider hat die Suche nach " + stockSearch+ " keine Resultate ergeben." );
       lookforStock();
     }
+    System.out.println("");
     switch (bank.checkPersonRole()) {
       case "customer":
         customerMenu();
@@ -252,7 +284,7 @@ public class BankClient {
         break;
     }
   }
-  public void sellStock(){
+  public void sellStock()  {
     System.out.println("Bitte geben Sie das Symbol für die gewünschte Aktie ein:");
     String symbol = input.nextLine();
     String output;
@@ -266,17 +298,18 @@ public class BankClient {
     }
     System.out.println("Bitte geben Sie die Anzahl der Aktien ein, die Sie für Ihren Kunden/ Ihre Kundin verkaufen wollen");
     int shares = Integer.valueOf(input.nextLine());
-    try{
-      /** TO DO, ID von KUNDEN bekommen
-       * ZUR ZEIT noch hardgecodet
-       */
 
-      output2= bank.sellStocks(4, symbol, shares);
+    System.out.println(bank.getID());
+    try{
+      int customerId = Integer.parseInt(bank.getID());
+
+      output2= bank.sellStocks(customerId, symbol, shares);
       System.out.println(output2);
     }
     catch (Exception e){
       System.out.println(e.getMessage());
     }
+    System.out.println("");
     switch (bank.checkPersonRole()) {
       case "customer":
         customerMenu();
@@ -318,6 +351,7 @@ public class BankClient {
     catch (Exception e){
       System.out.println(e.getMessage());
     }
+    System.out.println("");
     switch (bank.checkPersonRole()) {
       case "customer":
         customerMenu();
@@ -328,7 +362,7 @@ public class BankClient {
     }
   }
 
-  public void buyStock(){
+  public void buyStock()  {
     System.out.println("Bitte geben Sie das Symbol für die gewünschte Aktie ein:");
     String symbol = input.nextLine();
     String output;
@@ -343,16 +377,15 @@ public class BankClient {
     System.out.println("Bitte geben Sie die Anzahl der Aktien ein, die Sie kaufen wollen");
     int shares = Integer.valueOf(input.nextLine());
     try{
-      /** TO DO, ID von KUNDEN bekommen
-       *
-       */
+      int customerId = Integer.parseInt(bank.getID());
 
-     output2=  bank.buyStocks(4, symbol, shares);
-      System.out.println(output2);
+     output2=  bank.buyStocks(customerId, symbol, shares);
+     System.out.println(output2);
     }
     catch (Exception e){
       System.out.println(e.getMessage());
     }
+    System.out.println("");
     switch (bank.checkPersonRole()) {
       case "customer":
         customerMenu();
@@ -395,6 +428,7 @@ public class BankClient {
     catch (Exception e){
       System.out.println(e.getMessage());
     }
+    System.out.println("");
     switch (bank.checkPersonRole()) {
       case "customer":
         customerMenu();
@@ -403,6 +437,59 @@ public class BankClient {
         employeeMenu();
         break;
     }
-  }}
+  }
+
+  public void showDepot() {
+    int customerId = Integer.parseInt(bank.getID());
+    List<StockDTO> stockList = new ArrayList<>();
+    try{
+      stockList = bank.getUserDepot(customerId);}
+    catch (Exception e){
+      System.out.println("Depot konnte nicht abgerufen werden");
+    }
+    if (stockList.isEmpty()){
+      System.out.println(" Sie haben noch keine Aktien in Ihrem Depot");
+    }
+    else {
+   stockList.forEach((x) -> System.out.println("Aktienname " +x.getCompanyName() + " Symbol der Aktie " +x.getStockID_Symbol()+ " Anzahl die Sie von dieser Aktie  haben: "+ x.getSharesAmount()  ));
+  }
+    System.out.println("");
+    switch (bank.checkPersonRole()) {
+      case "customer":
+        customerMenu();
+        break;
+      case "employee":
+        employeeMenu();
+        break;
+    }}
+
+  public void showDepotforCustomer() {
+    System.out.println("Bitte geben Sie die Kundennummer des Kunden ein:");
+    int customerID = Integer.valueOf(input.nextLine());
+    List<StockDTO> stockList = new ArrayList<>();
+
+    try {
+      stockList = bank.getUserDepot(customerID);
+    }
+    catch (Exception e){
+      System.out.println("Depot konnte nicht abgerufen werden");
+    }
+    if (stockList.isEmpty()){
+      System.out.println("Es befinden sich noch kein Aktien in dem gesuchten Depot");
+    }
+    else {
+      stockList.forEach((x) -> System.out.println("Aktienname " +x.getCompanyName() + " Symbol der Aktie " +x.getStockID_Symbol()+ " Anzahl die Sie von dieser Aktie  haben: "+ x.getSharesAmount()  ));
+
+    }
+    System.out.println("");
+    switch (bank.checkPersonRole()) {
+      case "customer":
+        customerMenu();
+        break;
+      case "employee":
+        employeeMenu();
+        break;
+    }}
+}
 
 

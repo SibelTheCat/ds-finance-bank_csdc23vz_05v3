@@ -2,6 +2,7 @@ package net.froihofer.service;
 
 import dto.CustomerDTO;
 import dto.EmployeeDTO;
+import dto.StockDTO;
 import interfaces.BankInterface;
 import net.froihofer.dsfinance.ws.trading.PublicStockQuote;
 import persistence.dao.DepotDAO;
@@ -12,6 +13,7 @@ import net.froihofer.util.mapper.UserMapper;
 import persistence.dao.CustomerDAO;
 import persistence.entity.Customer;
 import net.froihofer.util.jboss.WildflyAuthDBHelper;
+import persistence.entity.Stock;
 
 
 import javax.annotation.Resource;
@@ -106,6 +108,22 @@ public class BankServiceImpl implements BankInterface {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+
+
+    @Override
+    @RolesAllowed({"customer", "employee"})
+    public List<StockDTO> getUserDepot(int userId) {
+        Customer customer = null;
+        List<Stock> stockList = new ArrayList<>();
+        try {
+            customer = customerDAO.searchCustomerByCustomerId(userId);
+            stockList = customer.getDepot().getStockList();
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);}
+            return UserMapper.helperFunktionForList(stockList);
     }
 
     @Override

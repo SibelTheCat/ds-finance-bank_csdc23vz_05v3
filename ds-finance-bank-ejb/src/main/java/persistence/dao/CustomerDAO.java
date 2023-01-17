@@ -41,4 +41,13 @@ public class CustomerDAO {
         customerList.addAll(queryResultList);
         return customerList;
     }
+
+    public Customer searchCustomerByCustomerId(int customerID) throws Exception{
+        Customer customer = entityManager.find(Customer.class, customerID);
+        if (customer == null) {
+            throw new Exception("Es konnte kein Kunde gefunden werden");
+        } else {
+            return customer;
+        }
+    }
 }
