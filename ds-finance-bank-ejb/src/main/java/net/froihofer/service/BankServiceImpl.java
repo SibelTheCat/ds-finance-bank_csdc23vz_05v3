@@ -49,6 +49,12 @@ public class BankServiceImpl implements BankInterface {
     }
 
     @Override
+    @RolesAllowed({"customer", "employee"})
+    public String getID() {
+        return ctx.getCallerPrincipal().getName();
+    }
+
+    @Override
     @RolesAllowed("employee")
     public EmployeeDTO createEmployee(String firstName, String lastname, String password) {
 

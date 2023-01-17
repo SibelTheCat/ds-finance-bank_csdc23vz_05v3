@@ -11,6 +11,8 @@ import java.util.List;
 public interface BankInterface {
 
     CustomerDTO createCustomer(String firstName, String lastname, String address, String password);
+
+    String getID();
     String checkPersonRole();
     EmployeeDTO createEmployee(String firstName, String lastname, String password);
     ArrayList<CustomerDTO> searchCustomer(String firstName, String lastName);
