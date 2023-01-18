@@ -20,8 +20,8 @@ public class Depot implements Serializable {
 
 
     public Depot() {
-    this.stockList = new ArrayList<>();
-    this.totalValue= new BigDecimal("0");
+  //  this.stockList = new ArrayList<>();
+  //  this.totalValue= new BigDecimal("0");
     }
 
     public List<Stock> getStockList() {

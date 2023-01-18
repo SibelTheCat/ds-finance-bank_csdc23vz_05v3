@@ -1,5 +1,6 @@
 package net.froihofer.dsfinance.bank.client;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -9,6 +10,7 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import com.ctc.wstx.exc.WstxOutputException;
+import dto.BankDTO;
 import dto.CustomerDTO;
 import dto.EmployeeDTO;
 import dto.StockDTO;
@@ -221,6 +223,10 @@ public class BankClient {
       case "9":
         System.out.println("Programm wird nun beendet");
         System.exit(0);
+      case "10":
+        System.out.println("Bank anlegen");
+        createBank();
+        break;
       default:
         System.out.println("Ungültige Eingabe, bitte geben Sie eine Ziffer zwischen 1 und 8 ein");
         break;
@@ -407,6 +413,7 @@ public class BankClient {
       output = bank.getStocksbySymbol(symbol);
       System.out.println(output);
     }catch (Exception e) {
+      e.printStackTrace();
       System.out.println(e.getMessage());
       buyStockForCostumer();
     }
@@ -426,6 +433,7 @@ public class BankClient {
       System.out.println(output2);
     }
     catch (Exception e){
+      e.printStackTrace();
       System.out.println(e.getMessage());
     }
     System.out.println("");
@@ -490,6 +498,19 @@ public class BankClient {
         employeeMenu();
         break;
     }}
+
+    private void createBank(){
+      try{
+        BigDecimal volume = bank.checkVolume();
+        System.out.println(volume);
+
+
+      }catch(Exception e){
+        e.printStackTrace();
+        System.out.println("Something went wrong");
+      }
+    }
 }
+
 
 

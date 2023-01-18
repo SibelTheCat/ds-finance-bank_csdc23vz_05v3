@@ -1,19 +1,16 @@
 package net.froihofer.service;
 
+import dto.BankDTO;
 import dto.CustomerDTO;
 import dto.EmployeeDTO;
 import dto.StockDTO;
 import interfaces.BankInterface;
 import net.froihofer.dsfinance.ws.trading.PublicStockQuote;
-import persistence.dao.DepotDAO;
-import persistence.dao.EmployeeDAO;
-import persistence.entity.Depot;
-import persistence.entity.Employee;
+import net.froihofer.util.mapper.BankMapper;
+import persistence.dao.*;
+import persistence.entity.*;
 import net.froihofer.util.mapper.UserMapper;
-import persistence.dao.CustomerDAO;
-import persistence.entity.Customer;
 import net.froihofer.util.jboss.WildflyAuthDBHelper;
-import persistence.entity.Stock;
 
 
 import javax.annotation.Resource;
@@ -27,6 +24,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Stateless(name = "BankService")
 @DeclareRoles({"customer", "employee"})
@@ -42,6 +40,12 @@ public class BankServiceImpl implements BankInterface {
 
     @Inject
     private DepotDAO depotDAO;
+
+    @Inject
+    private BankDAO bankDAO;
+
+    @Inject
+    private StockDAO stockDAO;
     Stockmarket st = new Stockmarket();
 
     @Override
@@ -161,10 +165,15 @@ public class BankServiceImpl implements BankInterface {
         }
         //check if Stock has enough shares left
         //check fist if avaiable stocks are "null"
+
+        System.out.println(quote.getFloatShares().intValue());
+        System.out.println(shares);
         if (quote.getFloatShares() == null) {
-            throw new Exception("Es sind leider nicht genug Shares übrig. Shares die noch für die Firma " + quote.getCompanyName() + " verfügbar sind :" + quote.getFloatShares() + " Shares");
+            throw new Exception(shares+"  Es sind leider nicht genug Shares übrig. Shares die noch für die Firma " + quote.getCompanyName() + " verfügbar sind :" + quote.getFloatShares() + " Shares");
         }
         // then if the wanted shares are too much
+
+
         if (quote.getFloatShares().intValue() < shares) {
             throw new Exception("Es sind leider nicht genug Shares übrig. Shares die noch für die Firma " + quote.getCompanyName() + " verfügbar sind :" + quote.getFloatShares() + " Shares");
         }
@@ -172,15 +181,35 @@ public class BankServiceImpl implements BankInterface {
         try {
             pricePerShare = st.buyStock(symbol, shares);
             output = "Sie haben " + shares + " Shares von der Aktie " + quote.getCompanyName() + " für je " + pricePerShare + " Kröten gekauft";
+
+            BigDecimal needAmount = new BigDecimal(shares).multiply(pricePerShare);
+
+            if (checkVolume().compareTo(needAmount)<0){
+            throw new Exception("Es ist leider nicht mehr genung Bankvolumen verfügbar");
+            }
+
+            else{
+                Bank bank = bankDAO.getBank();
+                BigDecimal currentVolume = bank.getBankVolume();
+                BigDecimal newVolume = currentVolume.subtract(needAmount);
+                bank.setBankVolume(newVolume);
+                bankDAO.update(bank);
+            }
+
+            Stock stock = checkIfUserHasStock(costumerID, symbol);
+            if (stock == null){
+                Stock newstock = stockDAO.createNewStockInDepot(quote.getCompanyName(), shares, symbol);
+                customerDAO.searchCustomerByCustomerId(costumerID).getDepot().getStockList().add(newstock);
+            }
+            else {
+              stock.setSharesAmount(stock.getSharesAmount()+shares);
+            }
             return output;
 
-            /** TO DO
-             * EINTRAG IN KUNDENDATENBANK
-             * Den Preis der Aktie ist unter pricePerShare gespeichert
-             */
 
         } catch (Exception e) {
-            throw new Exception("Stock konnte leider nicht gekauft werden, da nicht mehr genug Shares zur Verfügung stehen.");
+
+            throw new Exception(e);
         }
     }
     @Override
@@ -196,15 +225,38 @@ public class BankServiceImpl implements BankInterface {
         }
         try {
             pricePerShareSell = st.sellStock(symbol, shares);
-            output ="Sie haben " + shares + " Shares der Aktie " + st.getStockBySymbol(symbol).getCompanyName() + " für je " + pricePerShareSell + "Kröten verkauft";
+
+
+            output ="Sie haben " + shares + " Shares der Aktie " + st.getStockBySymbol(symbol).getCompanyName() + " für je " + pricePerShareSell + " Kröten verkauft";
+
+            Stock stock = checkIfUserHasStock(costumerID, symbol);
+            if (stock == null){
+                throw new Exception("Sie  haben keine Aktien zu diesem Symbol in Ihrem Depot");
+            }
+
+            else if(stock.getSharesAmount()< shares){
+                throw new Exception("Sie haben leider nicht die geforderte Anzahl der Aktien zum Symbol " + stock.getStockID_Symbol() + ". Die verfügbare Stockanzahl ist: " + stock.getSharesAmount());
+            }
+
+            else {
+                stock.setSharesAmount(stock.getSharesAmount()-shares);
+
+                Bank bank = bankDAO.getBank();
+                BigDecimal currentVolume = bank.getBankVolume();
+                BigDecimal toAdd = new BigDecimal(shares).multiply(pricePerShareSell);
+                BigDecimal newVolume = currentVolume.add(toAdd);
+                bank.setBankVolume(newVolume);
+                bankDAO.update(bank);
+            }
             return output;
-            /** TO DO
-             * EINTRAG IN KUNDENDATENBANK
-             * Aktuelle Kosten der Aktie sind in pricePerShareSell
-             */
+
         } catch (Exception e) {
             throw new Exception("Transaktion hat leider nicht geklappt");
         }
+
+
+
+
     }
     @Override
     @RolesAllowed({"customer", "employee"})
@@ -219,5 +271,37 @@ public class BankServiceImpl implements BankInterface {
         } catch (Exception e) {
             throw new Exception("Es wurden leider keine Aktien zum Symbol \"" + symbol+ "\"  gefunden");
         }}
+
+    private Stock checkIfUserHasStock(int customerId, String symbol){
+        List<Stock> stocks = new ArrayList<>();
+        Stock foundstock = null;
+     try {
+          stocks =  customerDAO.searchCustomerByCustomerId(customerId).getDepot().getStockList();
+
+         for (Stock s : stocks){
+             if(s.getStockID_Symbol().contains(symbol)){
+                 foundstock = s;
+             }
+         }
+    //    return foundstock;
+
+        } catch (Exception e) {
+            throw new RuntimeException("Aktien konnten nicht geladen werden");
+
+        }
+         return foundstock;
+
+
+    }
+    @Override
+    @RolesAllowed({"employee"})
+    public BigDecimal checkVolume(){
+      //  BigDecimal bankVol = new BigDecimal(5000);
+      //  Bank bank = bankDAO.createBank(bankVol);
+      //  BankDTO bankDto = BankMapper.bankToDTO(bank);
+       // bankDAO.persist(new Bank(new BigDecimal(1000000)));
+        return bankDAO.getBank().getBankVolume();
+
+    }
 
 }

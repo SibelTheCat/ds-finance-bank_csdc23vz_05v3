@@ -11,8 +11,8 @@ public class DepotDTO implements Serializable {
     private int depotID;
 
     public DepotDTO() {
-        this.stockList = new ArrayList<>();
-        this.totalValue = new BigDecimal("0");
+       // this.stockList = new ArrayList<>();
+       // this.totalValue = new BigDecimal("0");
     }
 
     public List<StockDTO> getStockList() {

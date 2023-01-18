@@ -13,6 +13,7 @@
     <class>persistence.entity.Depot</class>
     <class>persistence.entity.Employee</class>
     <class>persistence.entity.Stock</class>
+    <class>persistence.entity.Bank</class>
 
 
     <!-- Klassen werden auch als Entities berücksichtigt, wenn nicht gelistet -->
