@@ -153,6 +153,7 @@ public class BankServiceImpl implements BankInterface {
     @Override
     @RolesAllowed({"customer", "employee"})
     public String buyStocks(int costumerID, String symbol, int shares) throws Exception {
+        st.initService();
         BigDecimal pricePerShare;
         PublicStockQuote quote;
         String output;
@@ -215,6 +216,7 @@ public class BankServiceImpl implements BankInterface {
     @Override
     @RolesAllowed({"customer", "employee"})
     public String sellStocks(int costumerID, String symbol, int shares) throws Exception {
+        st.initService();
         BigDecimal pricePerShareSell= BigDecimal.valueOf(0);
         String output;
         //check if Symbol exists, if not Message + return value = 0;
@@ -261,6 +263,7 @@ public class BankServiceImpl implements BankInterface {
     @Override
     @RolesAllowed({"customer", "employee"})
     public String getStocksbySymbol(String symbol) throws Exception {
+        st.initService();
         PublicStockQuote stockQuoteToGetName;
         String aktie;
         try
@@ -296,9 +299,6 @@ public class BankServiceImpl implements BankInterface {
     @Override
     @RolesAllowed({"employee"})
     public BigDecimal checkVolume(){
-      //  BigDecimal bankVol = new BigDecimal(5000);
-      //  Bank bank = bankDAO.createBank(bankVol);
-      //  BankDTO bankDto = BankMapper.bankToDTO(bank);
        // bankDAO.persist(new Bank(new BigDecimal(1000000)));
         return bankDAO.getBank().getBankVolume();
 

@@ -302,14 +302,23 @@ public class BankClient {
       System.out.println(e.getMessage());
       sellStock();
     }
-    System.out.println("Bitte geben Sie die Anzahl der Aktien ein, die Sie für Ihren Kunden/ Ihre Kundin verkaufen wollen");
-    int shares = Integer.valueOf(input.nextLine());
+    System.out.println("Bitte geben Sie die Anzahl der Aktien ein, die Sie verkaufen wollen");
+    String shares1 = input.nextLine();
+    try {
+      Integer.parseInt(shares1);
+    }
+    catch (NumberFormatException e){
+      System.out.println(" Bitte geben Sie eine Zahl ein UPSI wieder von Beginn");
+      sellStock();
+    }
 
-    System.out.println(bank.getID());
+
+    //System.out.println(bank.getID());
+
     try{
       int customerId = Integer.parseInt(bank.getID());
 
-      output2= bank.sellStocks(customerId, symbol, shares);
+      output2= bank.sellStocks(customerId, symbol, Integer.parseInt(shares1));
       System.out.println(output2);
     }
     catch (Exception e){
@@ -340,18 +349,33 @@ public class BankClient {
       System.out.println(e.getMessage());
       sellStockForCustomer();
     }
-    System.out.println("Bitte geben Sie die Anzahl der Aktien ein, die Sie verkaufen wollen");
-    int shares = Integer.valueOf(input.nextLine());
+    System.out.println("Bitte geben Sie die Anzahl der Aktien ein, die Sie für Ihren Kunden/ Ihre Kundin verkaufen wollen");
+
+    String shares = input.nextLine();
+    try {
+      Integer.parseInt(shares);
+    }
+    catch (NumberFormatException e){
+      System.out.println(" Bitte geben Sie eine Zahl ein UPSI wieder von Beginn");
+      sellStockForCustomer();
+    }
+
+    try {
+      Integer.parseInt(shares);
+    }
+    catch (NumberFormatException e){
+      System.out.println(" Bitte geben Sie eine Zahl ein UPSI wieder von Beginn");
+      sellStockForCustomer();
+    }
+
+
+
     System.out.println("Bitte geben Sie die Kundennummer des Kunden ein:");
     int customerID = Integer.valueOf(input.nextLine());
-    /** TO DO: überprüfen ob Kundennummer korrekt ist
-     *
-     */
 
     try{
-      // TO DO, ID von KUNDEN bekommen
 
-      output2 = bank.sellStocks(customerID, symbol, shares);
+      output2 = bank.sellStocks(customerID, symbol, Integer.parseInt(shares));
       System.out.println(output2);
     }
     catch (Exception e){
@@ -381,11 +405,20 @@ public class BankClient {
       buyStock();
     }
     System.out.println("Bitte geben Sie die Anzahl der Aktien ein, die Sie kaufen wollen");
-    int shares = Integer.valueOf(input.nextLine());
+
+    String shares = input.nextLine();
+    try {
+      Integer.parseInt(shares);
+    }
+    catch (NumberFormatException e){
+      System.out.println(" Bitte geben Sie eine Zahl ein UPSI wieder von Beginn");
+      buyStock();
+    }
+
     try{
       int customerId = Integer.parseInt(bank.getID());
 
-     output2=  bank.buyStocks(customerId, symbol, shares);
+     output2=  bank.buyStocks(customerId, symbol, Integer.parseInt(shares));
      System.out.println(output2);
     }
     catch (Exception e){
@@ -404,8 +437,10 @@ public class BankClient {
 
   public void buyStockForCostumer(){
 
-    System.out.println("Bitte geben Sie das Symbol für die gewünschte Aktie ein:");
+    System.out.println("Bitte geben Sie die das Symbol der Aktie ein, die Sie für Ihren Kunden/ Ihre Kundin kaufen wollen");
     String symbol = input.nextLine();
+
+
     String output;
     String output2;
 
@@ -419,7 +454,15 @@ public class BankClient {
     }
 
     System.out.println("Bitte geben Sie die Anzahl der Aktien ein, die Sie für Ihren Kunden/ Ihre Kundin kaufen wollen");
-    int shares = Integer.valueOf(input.nextLine());
+  //  int shares = Integer.valueOf(input.nextLine());
+    String shares = input.nextLine();
+    try {
+      Integer.parseInt(shares);
+    }
+    catch (NumberFormatException e){
+      System.out.println(" Bitte geben Sie eine Zahl ein UPSI wieder von Beginn");
+      buyStockForCostumer();
+    }
     System.out.println("Bitte geben Sie die Kundennummer des Kunden ein:");
     int customerID = Integer.valueOf(input.nextLine());
 
@@ -427,9 +470,8 @@ public class BankClient {
      *
      */
     try{
-      // TO DO, ID von KUNDEN bekommen
 
-      output2 = bank.buyStocks(customerID, symbol, shares);
+      output2 = bank.buyStocks(customerID, symbol, Integer.parseInt(shares));
       System.out.println(output2);
     }
     catch (Exception e){
@@ -497,7 +539,8 @@ public class BankClient {
       case "employee":
         employeeMenu();
         break;
-    }}
+    }
+  }
 
     private void createBank(){
       try{
@@ -506,8 +549,16 @@ public class BankClient {
 
 
       }catch(Exception e){
-        e.printStackTrace();
+
         System.out.println("Something went wrong");
+      }
+      switch (bank.checkPersonRole()) {
+        case "customer":
+          customerMenu();
+          break;
+        case "employee":
+          employeeMenu();
+          break;
       }
     }
 }
