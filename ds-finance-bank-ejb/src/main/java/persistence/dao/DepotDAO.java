@@ -6,6 +6,7 @@ import persistence.entity.Stock;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.transaction.Transactional;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,6 +18,7 @@ public class DepotDAO {
     public Depot createDepot() {
         List<Stock> stockList = new ArrayList<>();
         Depot depot = new Depot();
+        //depot.setTotalValue(new BigDecimal(0));
         depot.setStockList(stockList);
         entityManager.persist(depot);
         return depot;

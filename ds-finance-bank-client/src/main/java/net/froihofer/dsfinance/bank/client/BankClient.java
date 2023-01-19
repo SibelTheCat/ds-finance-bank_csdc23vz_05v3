@@ -9,9 +9,8 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
-import com.ctc.wstx.exc.WstxOutputException;
-import dto.BankDTO;
 import dto.CustomerDTO;
+import dto.DepotDTO;
 import dto.EmployeeDTO;
 import dto.StockDTO;
 import interfaces.BankInterface;
@@ -66,7 +65,7 @@ public class BankClient {
     String id = input.nextLine();
     System.out.println("Passwort: ");
     String password = input.nextLine();
-    getRmiProxy(id, password); // 21 : test --> customer // 26 : alex --> employee
+    getRmiProxy(id, password); // 43 : 1234 --> customer // user1 : 1234 --> employee  // superuser:1234 --> employee der Bank erstellen kann
   }
 
   private void createCustomer() {
@@ -219,13 +218,14 @@ public class BankClient {
         break;
       case "8":
         System.out.println("Volumenabfrage");
+        checkBankVolume();
         break;
       case "9":
         System.out.println("Programm wird nun beendet");
         System.exit(0);
-      case "10":
+      case "secret10":
         System.out.println("Bank anlegen");
-        createBank();
+        setBank();
         break;
       default:
         System.out.println("Ungültige Eingabe, bitte geben Sie eine Ziffer zwischen 1 und 8 ein");
@@ -352,30 +352,39 @@ public class BankClient {
     System.out.println("Bitte geben Sie die Anzahl der Aktien ein, die Sie für Ihren Kunden/ Ihre Kundin verkaufen wollen");
 
     String shares = input.nextLine();
+    //überprüft ob Eingabe eine Zahl ist
     try {
       Integer.parseInt(shares);
     }
     catch (NumberFormatException e){
-      System.out.println(" Bitte geben Sie eine Zahl ein UPSI wieder von Beginn");
+      System.out.println(" Bitte geben Sie eine Zahl ein - > Die Abfrage wird erneut gestartet");
       sellStockForCustomer();
     }
-
-    try {
-      Integer.parseInt(shares);
-    }
-    catch (NumberFormatException e){
-      System.out.println(" Bitte geben Sie eine Zahl ein UPSI wieder von Beginn");
-      sellStockForCustomer();
-    }
-
 
 
     System.out.println("Bitte geben Sie die Kundennummer des Kunden ein:");
-    int customerID = Integer.valueOf(input.nextLine());
+    String customerID = input.nextLine();
+   //Überprüft ob Kundennummer-Eingabe eine Zahl ist
+    try {
+      Integer.parseInt(customerID);
+    }
+    catch (NumberFormatException e){
+      System.out.println(" Bitte geben Sie eine Zahl als KundenID ein -> die Abfrage wird erneut gestartet");
+      sellStockForCustomer();
+    }
+
+    //Überprüft ob Kunde existiert
+    try {
+      bank.checkIfUsrExists(Integer.parseInt(customerID));
+    }
+    catch (Exception e){
+      System.out.println(e.getMessage());
+      System.out.println("Bitte führen Sie die komplette Eingabe erneut durch");
+      sellStockForCustomer();
+    }
 
     try{
-
-      output2 = bank.sellStocks(customerID, symbol, Integer.parseInt(shares));
+      output2 = bank.sellStocks(Integer.parseInt(customerID), symbol, Integer.parseInt(shares));
       System.out.println(output2);
     }
     catch (Exception e){
@@ -411,7 +420,7 @@ public class BankClient {
       Integer.parseInt(shares);
     }
     catch (NumberFormatException e){
-      System.out.println(" Bitte geben Sie eine Zahl ein UPSI wieder von Beginn");
+      System.out.println(" Bitte geben Sie eine Zahl ein -> ");
       buyStock();
     }
 
@@ -440,42 +449,56 @@ public class BankClient {
     System.out.println("Bitte geben Sie die das Symbol der Aktie ein, die Sie für Ihren Kunden/ Ihre Kundin kaufen wollen");
     String symbol = input.nextLine();
 
-
     String output;
     String output2;
 
+// überprüft ob Symbol existiert
     try{
       output = bank.getStocksbySymbol(symbol);
       System.out.println(output);
     }catch (Exception e) {
-      e.printStackTrace();
+     // e.printStackTrace();
       System.out.println(e.getMessage());
       buyStockForCostumer();
     }
 
-    System.out.println("Bitte geben Sie die Anzahl der Aktien ein, die Sie für Ihren Kunden/ Ihre Kundin kaufen wollen");
-  //  int shares = Integer.valueOf(input.nextLine());
+    System.out.println("Bitte geben Sie die Anzahl der Aktien ein (die Zahl darf nicht mehr 9 Stellen haben), die Sie für Ihren Kunden/ Ihre Kundin kaufen wollen");
+  //  überprüft ob Eingabe der Aktien-Aktienanzahl eine Zahl ist
     String shares = input.nextLine();
     try {
       Integer.parseInt(shares);
     }
     catch (NumberFormatException e){
-      System.out.println(" Bitte geben Sie eine Zahl ein UPSI wieder von Beginn");
+      System.out.println(" Bitte geben Sie eine gültige Zahl ein -> ");
       buyStockForCostumer();
     }
     System.out.println("Bitte geben Sie die Kundennummer des Kunden ein:");
-    int customerID = Integer.valueOf(input.nextLine());
 
-    /** TO DO: überprüfen ob Kundennummer korrekt ist
-     *
-     */
-    try{
+    String customerID = input.nextLine();
+    try {
+      Integer.parseInt(customerID);
+    }
+    catch (NumberFormatException e){
+      System.out.println(" Bitte geben Sie eine Zahl -> Eingabe startet erneut");
+      buyStockForCostumer();
+    }
 
-      output2 = bank.buyStocks(customerID, symbol, Integer.parseInt(shares));
-      System.out.println(output2);
+    try {
+      bank.checkIfUsrExists(Integer.parseInt(customerID));
     }
     catch (Exception e){
-      e.printStackTrace();
+      System.out.println(e.getMessage());
+      System.out.println("Bitte führen Sie die komplette Eingabe erneut durch");
+      buyStockForCostumer();
+    }
+
+    try{
+      output2 = bank.buyStocks(Integer.parseInt(customerID), symbol, Integer.parseInt(shares));
+      System.out.println(output2);
+    }
+
+    catch (Exception e){
+     // e.printStackTrace();
       System.out.println(e.getMessage());
     }
     System.out.println("");
@@ -491,17 +514,19 @@ public class BankClient {
 
   public void showDepot() {
     int customerId = Integer.parseInt(bank.getID());
-    List<StockDTO> stockList = new ArrayList<>();
+  //  List<StockDTO> stockList = new ArrayList<>();
+    DepotDTO depotDTO = null;
     try{
-      stockList = bank.getUserDepot(customerId);}
+      depotDTO = bank.getUserDepot(customerId);}
     catch (Exception e){
       System.out.println("Depot konnte nicht abgerufen werden");
     }
-    if (stockList.isEmpty()){
+    if (depotDTO.getStockList().isEmpty()){
       System.out.println(" Sie haben noch keine Aktien in Ihrem Depot");
     }
     else {
-   stockList.forEach((x) -> System.out.println("Aktienname " +x.getCompanyName() + " Symbol der Aktie " +x.getStockID_Symbol()+ " Anzahl die Sie von dieser Aktie  haben: "+ x.getSharesAmount()  ));
+      System.out.println("***** DAS VOLUMEN IHRES DEPOTS BETRÄGT: " + depotDTO.getTotalValue());
+   depotDTO.getStockList().forEach((x) -> System.out.println("Aktienname " +x.getCompanyName() + " Symbol der Aktie " +x.getStockID_Symbol()+ " Anzahl die Sie von dieser Aktie  haben: "+ x.getSharesAmount()  ));
   }
     System.out.println("");
     switch (bank.checkPersonRole()) {
@@ -515,20 +540,39 @@ public class BankClient {
 
   public void showDepotforCustomer() {
     System.out.println("Bitte geben Sie die Kundennummer des Kunden ein:");
-    int customerID = Integer.valueOf(input.nextLine());
-    List<StockDTO> stockList = new ArrayList<>();
+    String customerID = input.nextLine();
+    try {
+      Integer.parseInt(customerID);
+    }
+    catch (NumberFormatException e){
+      System.out.println(" Bitte geben Sie eine Zahl für die Kundennummer ein -> Die Abfrage wird neu gestartet");
+      buyStockForCostumer();
+    }
 
     try {
-      stockList = bank.getUserDepot(customerID);
+      bank.checkIfUsrExists(Integer.parseInt(customerID));
+    }
+    catch (Exception e){
+      System.out.println(e.getMessage());
+      System.out.println("bitte führen Sie die komplette Eingabe erneut druch");
+      buyStockForCostumer();
+    }
+    //List<StockDTO> stockList = new ArrayList<>();
+    DepotDTO depotDTO = null;
+
+    try {
+      depotDTO = bank.getUserDepot(Integer.parseInt(customerID));
     }
     catch (Exception e){
       System.out.println("Depot konnte nicht abgerufen werden");
     }
-    if (stockList.isEmpty()){
+    if (depotDTO.getStockList().isEmpty()){
       System.out.println("Es befinden sich noch kein Aktien in dem gesuchten Depot");
     }
     else {
-      stockList.forEach((x) -> System.out.println("Aktienname " +x.getCompanyName() + " Symbol der Aktie " +x.getStockID_Symbol()+ " Anzahl die Sie von dieser Aktie  haben: "+ x.getSharesAmount()  ));
+
+      System.out.println("***** DAS VOLUMEN DES DEPOTS BETRÄGT: " + depotDTO.getTotalValue());
+      depotDTO.getStockList().forEach((x) -> System.out.println("Aktienname " +x.getCompanyName() + " Symbol der Aktie " +x.getStockID_Symbol()+ " Anzahl die Sie von dieser Aktie  haben: "+ x.getSharesAmount()  ));
 
     }
     System.out.println("");
@@ -542,7 +586,7 @@ public class BankClient {
     }
   }
 
-    private void createBank(){
+    private void checkBankVolume(){
       try{
         BigDecimal volume = bank.checkVolume();
         System.out.println(volume);
@@ -561,6 +605,14 @@ public class BankClient {
           break;
       }
     }
+  private void setBank(){
+    String user = bank.getID();
+    try { bank.createBank();
+      System.out.println("Die Bank wurde von " + user + " erstellt");}
+    catch (Exception e){
+      System.out.println(e.getMessage());
+    }
+  }
 }
 
 

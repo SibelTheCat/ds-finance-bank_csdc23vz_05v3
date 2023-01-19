@@ -1,9 +1,6 @@
 package net.froihofer.service;
 
-import dto.BankDTO;
-import dto.CustomerDTO;
-import dto.EmployeeDTO;
-import dto.StockDTO;
+import dto.*;
 import interfaces.BankInterface;
 import net.froihofer.dsfinance.ws.trading.PublicStockQuote;
 import net.froihofer.util.mapper.BankMapper;
@@ -37,15 +34,13 @@ public class BankServiceImpl implements BankInterface {
     private CustomerDAO customerDAO;
     @Inject
     private EmployeeDAO employeeDAO;
-
     @Inject
     private DepotDAO depotDAO;
-
     @Inject
     private BankDAO bankDAO;
-
     @Inject
     private StockDAO stockDAO;
+
     Stockmarket st = new Stockmarket();
 
     @Override
@@ -74,9 +69,7 @@ public class BankServiceImpl implements BankInterface {
     @Override
     @RolesAllowed("employee")
     public CustomerDTO createCustomer(String firstName, String lastname, String password, String address) {
-        /** neu
-         *
-         */
+
         Depot depot = depotDAO.createDepot();
 
         Customer customer = customerDAO.createCustomer(firstName, lastname, password, address, depot);
@@ -118,16 +111,16 @@ public class BankServiceImpl implements BankInterface {
 
     @Override
     @RolesAllowed({"customer", "employee"})
-    public List<StockDTO> getUserDepot(int userId) {
+    public DepotDTO getUserDepot(int userId) {
         Customer customer = null;
-        List<Stock> stockList = new ArrayList<>();
+        Depot depot = null;
         try {
             customer = customerDAO.searchCustomerByCustomerId(userId);
-            stockList = customer.getDepot().getStockList();
+            depot = customer.getDepot();
 
         } catch (Exception e) {
             throw new RuntimeException(e);}
-            return UserMapper.helperFunktionForList(stockList);
+            return UserMapper.depotToDTO(depot);
     }
 
     @Override
@@ -167,8 +160,6 @@ public class BankServiceImpl implements BankInterface {
         //check if Stock has enough shares left
         //check fist if avaiable stocks are "null"
 
-        System.out.println(quote.getFloatShares().intValue());
-        System.out.println(shares);
         if (quote.getFloatShares() == null) {
             throw new Exception(shares+"  Es sind leider nicht genug Shares übrig. Shares die noch für die Firma " + quote.getCompanyName() + " verfügbar sind :" + quote.getFloatShares() + " Shares");
         }
@@ -178,24 +169,23 @@ public class BankServiceImpl implements BankInterface {
         if (quote.getFloatShares().intValue() < shares) {
             throw new Exception("Es sind leider nicht genug Shares übrig. Shares die noch für die Firma " + quote.getCompanyName() + " verfügbar sind :" + quote.getFloatShares() + " Shares");
         }
+        BigDecimal costOfShare = quote.getLastTradePrice();
+        BigDecimal needAmount = new BigDecimal(shares).multiply(costOfShare);
 
+        if (checkVolume().compareTo(needAmount)<0){
+            throw new Exception("Es ist leider nicht mehr genung Bankvolumen verfügbar");
+        }
         try {
             pricePerShare = st.buyStock(symbol, shares);
             output = "Sie haben " + shares + " Shares von der Aktie " + quote.getCompanyName() + " für je " + pricePerShare + " Kröten gekauft";
 
-            BigDecimal needAmount = new BigDecimal(shares).multiply(pricePerShare);
 
-            if (checkVolume().compareTo(needAmount)<0){
-            throw new Exception("Es ist leider nicht mehr genung Bankvolumen verfügbar");
-            }
-
-            else{
                 Bank bank = bankDAO.getBank();
                 BigDecimal currentVolume = bank.getBankVolume();
                 BigDecimal newVolume = currentVolume.subtract(needAmount);
                 bank.setBankVolume(newVolume);
                 bankDAO.update(bank);
-            }
+
 
             Stock stock = checkIfUserHasStock(costumerID, symbol);
             if (stock == null){
@@ -205,6 +195,12 @@ public class BankServiceImpl implements BankInterface {
             else {
               stock.setSharesAmount(stock.getSharesAmount()+shares);
             }
+            //DepotVolumen wird aktuelisiert
+          //  Depot depot =  customerDAO.searchCustomerByCustomerId(costumerID).getDepot();
+          //  BigDecimal depotVolumeAktuell = depot.getTotalValue();
+          //  BigDecimal newDepotVolume = depotVolumeAktuell.add(needAmount);
+           // depot.setTotalValue(newDepotVolume);
+
             return output;
 
 
@@ -225,11 +221,10 @@ public class BankServiceImpl implements BankInterface {
         } catch (Exception e) {
             throw new Exception("Es wurden leider keine Aktien zu \"" + symbol + "\"  gefunden");
         }
+
+
         try {
-            pricePerShareSell = st.sellStock(symbol, shares);
 
-
-            output ="Sie haben " + shares + " Shares der Aktie " + st.getStockBySymbol(symbol).getCompanyName() + " für je " + pricePerShareSell + " Kröten verkauft";
 
             Stock stock = checkIfUserHasStock(costumerID, symbol);
             if (stock == null){
@@ -241,6 +236,9 @@ public class BankServiceImpl implements BankInterface {
             }
 
             else {
+                pricePerShareSell = st.sellStock(symbol, shares);
+                output ="Sie haben " + shares + " Shares der Aktie " + st.getStockBySymbol(symbol).getCompanyName() + " für je " + pricePerShareSell + " Kröten verkauft";
+
                 stock.setSharesAmount(stock.getSharesAmount()-shares);
 
                 Bank bank = bankDAO.getBank();
@@ -249,7 +247,14 @@ public class BankServiceImpl implements BankInterface {
                 BigDecimal newVolume = currentVolume.add(toAdd);
                 bank.setBankVolume(newVolume);
                 bankDAO.update(bank);
+
+                //DepotVolumen wird aktualisiert
+          //      Depot depot =  customerDAO.searchCustomerByCustomerId(costumerID).getDepot();
+           //     BigDecimal depotVolumeAktuell = depot.getTotalValue();
+            //    BigDecimal newDepotVolume = depotVolumeAktuell.subtract(toAdd);
+            //    depot.setTotalValue(newDepotVolume);
             }
+
             return output;
 
         } catch (Exception e) {
@@ -299,9 +304,30 @@ public class BankServiceImpl implements BankInterface {
     @Override
     @RolesAllowed({"employee"})
     public BigDecimal checkVolume(){
-       // bankDAO.persist(new Bank(new BigDecimal(1000000)));
+
         return bankDAO.getBank().getBankVolume();
 
+    }
+
+    @Override
+    @RolesAllowed({"employee"})
+    public void createBank() throws Exception {
+
+        String user = ctx.getCallerPrincipal().getName();
+        if (user.equals("superuser")){
+
+            bankDAO.persist(new Bank(new BigDecimal(1000000)));}
+        else{ throw new Exception("Sie dürfen diesen Befehl nicht ausführen ");}
+
+
+    }
+
+    @Override
+    @RolesAllowed({"employee"})
+    public void checkIfUsrExists(int id) throws Exception {
+
+        //wirft exception mit Message wenn Kunde nicht existiert
+       customerDAO.searchCustomerByCustomerId(id);
     }
 
 }

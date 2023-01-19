@@ -1,9 +1,6 @@
 package interfaces;
 
-import dto.BankDTO;
-import dto.CustomerDTO;
-import dto.EmployeeDTO;
-import dto.StockDTO;
+import dto.*;
 
 import javax.ejb.Remote;
 import java.math.BigDecimal;
@@ -23,8 +20,12 @@ public interface BankInterface {
     String sellStocks(int costumerID, String symbol, int shares) throws Exception;
     String buyStocks(int costumerID, String symbol, int shares) throws Exception;
     String getStocksbySymbol(String symbol) throws Exception;
-    List<StockDTO> getUserDepot(int userId);
+    DepotDTO getUserDepot(int userId);
 
     BigDecimal checkVolume();
+
+    void createBank() throws Exception;
+
+    void checkIfUsrExists(int id) throws Exception;
 }
 
